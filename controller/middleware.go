@@ -1,22 +1,13 @@
-package helper
+package controller
 
 import (
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/golang-jwt/jwt"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-var store *session.Store
-
-func init(){
-	store = session.New()
-}
-
-func isAdmin(c *fiber.Ctx) error {
+func IsAdmin(c *fiber.Ctx) error {
 	tokenString := c.GetReqHeaders()["Token"]
 	if tokenString == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -30,10 +21,10 @@ func isAdmin(c *fiber.Ctx) error {
 		return []byte("secretkey"), nil
 	})
 	if err != nil || !token.Valid {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  false,
 			"message": "Failed to Access",
-			"errors":  "You are unauthorized",
+			"errors":  err.Error(),
 			"data":    nil,
 		})
 	}
@@ -58,7 +49,7 @@ func isAdmin(c *fiber.Ctx) error {
 	return c.Next()
 }
 
-func isLoggedIn(c *fiber.Ctx) error {
+func IsLoggedIn(c *fiber.Ctx) error {
 	tokenString := c.GetReqHeaders()["Token"]
 	if tokenString == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -72,10 +63,10 @@ func isLoggedIn(c *fiber.Ctx) error {
 		return []byte("secretkey"), nil
 	})
 	if err != nil || !token.Valid {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  false,
 			"message": "Failed to Access",
-			"errors":  "You are unauthorized",
+			"errors":  err.Error(),
 			"data":    nil,
 		})
 	}
@@ -88,12 +79,12 @@ func isLoggedIn(c *fiber.Ctx) error {
 			"data":    nil,
 		})
 	}
-	sess, err := store.Get(c)
+	sess, err := Store.Get(c)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  false,
 			"message": "Failed to Access",
-			"errors":  "There is an internal server error",
+			"errors":  err.Error(),
 			"data":    nil,
 		})
 	}
@@ -103,7 +94,7 @@ func isLoggedIn(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  false,
 			"message": "Failed to Access",
-			"errors":  "There is an internal server error",
+			"errors":  err.Error(),
 			"data":    nil,
 		})
 	}
